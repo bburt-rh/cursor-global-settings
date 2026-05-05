@@ -86,6 +86,7 @@ Use project rules for:
 - [`docs/install-claude-code.md`](docs/install-claude-code.md) -- Detailed Claude Code installation instructions
 - [`docs/customizing.md`](docs/customizing.md) -- How to fork and adapt these rules
 - [`docs/whats-included.md`](docs/whats-included.md) -- Explanation of each section and why it exists
+- [`docs/faq.md`](docs/faq.md) -- Frequently asked questions for beginners
 
 ## License
 
