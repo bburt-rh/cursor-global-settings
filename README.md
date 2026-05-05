@@ -2,6 +2,8 @@
 
 Global rules and preferences for Cursor and Claude Code, optimized for Red Hat enterprise development workflows.
 
+**New to AI coding assistants or Cursor rules?** Start with the [FAQ](docs/faq.md) for answers to common questions like "Do I need both files?" and "How do I know the rules are working?"
+
 ## What is this?
 
 AI coding assistants (Cursor, Claude Code) accept configuration files that shape how they generate code, make architectural decisions, and interact with you. These files are injected as system context -- the AI reads them before responding to any request.
