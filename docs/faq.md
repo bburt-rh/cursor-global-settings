@@ -54,6 +54,16 @@ The rules are written for Cursor and Claude Code specifically. Other tools have 
 
 Yes. The `CLAUDE.md` file in this repo works in both Cursor and Claude Code without modification -- copy it to `~/CLAUDE.md` and both tools read it automatically. The `cursor-user-rules.md` content is Cursor-specific in format (it goes into the Settings UI), but the underlying guidance is plain markdown. To use it in Claude Code, copy the relevant sections into your `~/CLAUDE.md` or a project-level `CLAUDE.md`. Claude Code does not have a separate "user rules" mechanism -- `~/CLAUDE.md` is its equivalent.
 
+## How do these rules interact with skills and agent files?
+
+Skills (SKILL.md) and agents (subagent .md files) provide task-specific instructions that the AI follows when a skill is invoked or an agent is dispatched. Global rules, project rules, and skill/agent instructions all coexist in the AI's context simultaneously. The priority order is roughly:
+
+1. **Skill/agent instructions** -- most specific. When a skill is active, its instructions take precedence for that task.
+2. **Project rules** (.cursor/rules/*.mdc, project-level CLAUDE.md) -- apply to the current repo.
+3. **Global rules** (User Rules, ~/CLAUDE.md) -- broadest scope, lowest priority when they conflict with something more specific.
+
+In practice, conflicts are rare because they operate at different levels. Your global rules say "use Podman" (technology choice), while a skill says "run this specific script to lint a file" (task instruction). They do not contradict each other -- they layer. If a skill explicitly needs to override a global rule (for example, a skill that generates Docker-specific content for upstream compatibility), the skill's instructions win for that invocation.
+
 ## My team has different conventions. Should I fork or override with project rules?
 
 It depends on the scope of the differences:
