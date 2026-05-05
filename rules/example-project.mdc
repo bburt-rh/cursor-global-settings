@@ -1,0 +1,40 @@
+---
+description: Example project-level rule for a Python FastAPI service
+globs: "**/*.py"
+alwaysApply: false
+---
+
+# Project conventions
+
+This is an example `.mdc` rule file. Place files like this in `.cursor/rules/` within any repository to add project-specific AI guidance.
+
+## How this file works
+
+- The `description` field tells Cursor when to consider this rule.
+- The `globs` field limits the rule to specific file patterns. Set to `**/*` or remove for all files.
+- The `alwaysApply` field controls whether the rule is always active or only when matching files are open.
+
+## Example: Python service conventions
+
+This project uses:
+
+- FastAPI with dependency injection via `Depends()`
+- SQLAlchemy 2.0 async sessions for database access
+- Pydantic v2 models for request/response schemas
+- Alembic for database migrations
+
+When creating new endpoints:
+
+1. Place route handlers in `src/api/routes/`
+1. Place business logic in `src/services/`
+1. Place database queries in `src/repositories/`
+1. Place Pydantic models in `src/schemas/`
+
+Do not put business logic in route handlers. Route handlers should only parse the request, call a service, and return the response.
+
+## Testing conventions
+
+- Unit tests go in `tests/unit/` mirroring the `src/` structure
+- Integration tests go in `tests/integration/`
+- Use `pytest-asyncio` for async test functions
+- Use factory fixtures (not raw SQL) for test data setup

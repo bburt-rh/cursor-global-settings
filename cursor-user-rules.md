@@ -1,0 +1,271 @@
+# Global Cursor Rules - Project Defaults
+# Be sure to read each of these and customize them to your use case.
+
+## Code Generation Guidelines
+
+Write clean, idiomatic code. Avoid lots of duplicate code; e.g. in unit tests, "data driven" tests can be much more concise and understandable. Ensure robust error handling with informative, user-helpful messages, and proactively handle edge cases. Adhere to established style conventions like `rustfmt`, and use constants for "magic" strings or numbers.
+
+In addition to writing good code, be mindful of the following common problems:
+
+- **Avoid AI slop**: DO NOT do things like generate random new toplevel markdown files. Tracking your work should go in a mixture of the git commit log or documentation for existing code.
+- **Clean Commit History**: Strive for a clean, readable git history. Separate logical changes into distinct commits, each with a clear message. Where applicable, try to create "prep" commits that could be merged separately.
+- **Integration**: Try to ensure your changes "fit in". Prefer to fix/extend existing docs or code instead of generating new.
+- **Deployment Awareness**: Consider the different environments where the code will run. Avoid hardcoded paths or assumptions that will break in a deployed environment.
+- **User-Centric Output**: Design CLI output with the user experience in mind. Avoid overwhelming users with debug-level information by default; instead, provide concise, useful information and hide verbose output behind flags like `--verbose`.
+- **No Binary Bloat**: Avoid committing large binary files or compiled artifacts to the source repository. If a binary is necessary for testing, it should be fetched from a release or other external source, not stored in git.
+- **Ecosystem Knowledge**: Demonstrate knowledge of the broader ecosystem, such as the status of various libraries and language features, and suggest alternative crates (e.g., `bstr`) when appropriate.
+
+### When providing code examples:
+- Always reference these preferences for technology choices
+- Search for current versions rather than using potentially outdated information
+- Ask about FIPS requirements and security constraints for enterprise environments
+- Prioritize Red Hat ecosystem solutions and OpenShift-native approaches
+- Focus on working solutions that follow these standards rather than theoretical perfection
+- For MCP server distribution, recommend the multi-layered approach with Python packages, containers, and OpenShift manifests
+
+### Error Handling Approach
+- Never hide errors or mock functionality to work around problems
+- Make failures obvious and debuggable
+- Provide clear error messages that help developers understand what went wrong
+- Only use mocking when explicitly requested by the developer
+
+## Architecture
+- If there is an ARCHITECTURE.md file in the root, refer to that when writing new code and do not stray from it without discussion.
+- Do not create multiple versions of the same file as we iterate. Try to just edit a file in place. If you are introducing a breaking change, ask the user if we need to preserve the old way and if so, develop in a backward compatible way.
+- If no backward compatibility is needed, then you can just replace existing functionality.
+
+## Agreeableness
+- While I appreciate polite responses, please do not assume that if I am asking a question that implies I don't agree with the approach.
+- Sometimes I want to better understand something, so I will ask you to explain it to me.
+- If I ask a question, just answer the question with consideration for the overall context of our application.
+- If I don't agree with an approach, I will be plain and direct about that.
+
+## File size
+- Aim for no more than 512 lines in each code file. This helps to decrease context saturation.
+- If more than 512 lines are needed, consider breaking some functions into importable utilities.
+- Do not simply truncate a file. If it gets a little more than 512 lines and there is nothing to break out, then continue.
+
+## Git
+- Never perform `git add` or `git commit` operations - these are handled manually by the user
+
+## Creating Directories
+- If you are creating directories for a project structure, create a shell script to do the directory creation and then run the script.
+
+## Environment & Platform
+- Use Podman, NOT Docker
+- Use `Containerfile`, NOT `Dockerfile`
+- Use `podman-compose.yml` for local orchestration
+- Target deployment: Red Hat OpenShift with OpenShift AI features
+- Always use Red Hat UBI base images (registry.redhat.io/ubi9/*)
+- **Container Architecture**: When building on Mac for OpenShift deployment, always specify `--platform linux/amd64` to avoid ARM64/x86_64 architecture mismatches
+  ```bash
+  podman build --platform linux/amd64 -t myapp:latest -f Containerfile . --no-cache
+  ```
+- **Build Strategy**: Prefer using OpenShift BuildConfig over building and pushing containers locally where possible
+
+## Python Development
+- ALWAYS use venv for local development
+- Never install packages globally
+- For package versions: search PyPI or let pip resolve (don't use training data versions)
+- Preferred web framework: FastAPI
+- MCP implementation: FastMCP v2
+
+## Architecture Principles
+- Prefer loose coupling via APIs
+- Use MCP servers for AI capabilities
+- Real-time: SSE for REST, streamable-http for MCP
+- Avoid gRPC unless specifically requested
+- No early optimization - get basic functionality working first
+
+## AI/ML Stack
+- Agent frameworks: LangChain/LangGraph or Meta LlamaStack
+- Embedding models: Must be vLLM-compatible
+- Document processing: Use Docling
+- Model types:
+  - Local SLMs for sensitive data
+  - OpenShift AI Models for enterprise
+  - Public Cloud Hosted only for non-sensitive tasks and with explicit approval
+- KubeFlow pipelines for data flows and model development
+- OpenShift AI workbenches for experimentation
+
+## Database Choices
+- Relational: PostgreSQL
+- Document: MongoDB
+- Graph: Neo4j
+- Vector: PGVector (if using PostgreSQL), Milvus, or Weaviate
+- Cache: Redis
+
+## Security & Compliance
+- FIPS compliance may be required - ask if unclear
+- Use FIPS-enabled UBI images when needed
+- OAuth2/OIDC via OpenShift for auth
+- Secrets: OpenShift Secrets or HashiCorp Vault
+
+## Development Practices
+- NEVER mock functionality to work around errors
+- Let broken things stay visibly broken
+- Only mock when explicitly requested
+- Focus on working code over perfect architecture
+- Create explicit error messages that help debugging
+
+## Project Structure
+```
+project-root/
+├── Containerfile
+├── podman-compose.yml
+├── manifests/
+│   ├── base/
+│   └── overlays/
+├── src/
+├── prompts/ # YAML-based prompt management
+├── mcp-servers/
+├── agents/
+└── tests/
+```
+
+## Testing Standards
+
+### Python Testing
+- Framework: pytest for all Python testing
+- Coverage: Aim for 80%+ code coverage minimum
+- Test Structure: Mirror source code structure in `tests/` directory
+- Error Paths: Explicitly test error conditions and edge cases
+- Fixtures: Use pytest fixtures for reusable test setup
+- Mocking: Mock external dependencies, not to hide errors
+
+### Testing Practices
+- Write tests before or alongside code (TDD/BDD when appropriate)
+- Test both happy paths and failure scenarios
+- Include integration tests for API endpoints
+- Use descriptive test names that explain what is being tested
+- Run tests locally before committing
+- Include test commands in project documentation
+
+### Test Execution
+```bash
+# Run all tests
+pytest
+
+# Run with coverage
+pytest --cov=src --cov-report=html
+
+# Run specific test file
+pytest tests/test_specific.py
+
+# Run tests matching pattern
+pytest -k "test_authentication"
+```
+
+## Prompt Management Standards
+
+### Format & Organization
+- Format: YAML files for easy editing and developer briefing
+- Directory: `prompts/` (peer with `src/`)
+- Variable substitution: Use `{variable_name}` format in templates
+- Response schemas: Maintain separate JSON schema files when structured output is needed
+- Rationale: Keep prompts easily editable rather than baking into MCP servers
+- Developer onboarding: YAML format makes it easy to brief other developers on prompt functionality
+
+### YAML Structure Requirements
+```yaml
+name: "Human-readable prompt name"
+description: "Purpose and context of the prompt"
+template: |
+  Prompt text with {variable_name} substitution
+
+# Optional fields:
+parameters:
+  - temperature: 0.0
+  - max_tokens: 2000
+
+variables:
+  - name: "variable_name"
+    type: "string"
+    description: "Variable description"
+    required: true
+```
+
+## MCP Server Publishing Strategy
+
+When creating reusable MCP servers, use this multi-layered approach:
+
+### 1. Python Package Distribution
+- Use `pyproject.toml` with proper entry points for CLI tools
+- Publish to internal PyPI for easy pip install across teams
+- Provide template repositories for teams to clone and customize
+
+### 2. Container Strategy
+- Red Hat UBI for all container builds
+- Use multi-stage builds for production optimization
+- Push to OpenShift internal registry or enterprise container registry
+
+### 3. OpenShift Deployment
+- Provide base manifests with Kustomize overlays for different environments
+- Structure for ArgoCD deployment
+- Include ServiceMonitor for OpenShift monitoring stack
+
+### 4. Developer Experience
+- Provide command-line tools for easy server creation and management
+- Include examples, API docs, and deployment guides
+- Scripts to generate new MCP server projects with prompts
+
+## MCP Server Development
+- Default to STDIO transport for local development
+- Use HTTP (streamable-http) transport for production deployments
+- Structure prompts in YAML files within `prompts/` directory
+- Implement proper variable substitution and validation
+- Include reload capabilities for prompt management
+
+## Deployment
+- GitOps with ArgoCD when appropriate
+- OpenShift Pipelines (Tekton) for CI/CD
+- Use OpenShift built-in monitoring
+
+## Enterprise Integration Notes
+- Always consider security and compliance requirements
+- Assume enterprise environment unless told otherwise
+- Ask about existing infrastructure and integration points
+- Consider scalability and monitoring from the start
+- Plan for team collaboration and knowledge sharing
+- Ensure all solutions work within Red Hat OpenShift ecosystem
+- Design for multi-team usage and shared services where appropriate
+- Add to memory: "When making changes to a file, do not create a new version of that file unless instructed. Proliferation of various versions of files leads to grand confusion."
+
+## Quick Reminders
+- Check if FIPS is needed before starting
+- Use venv before any Python work
+- Search for latest package versions
+- Red Hat UBI base images only
+- FastAPI > Flask for new projects
+- Docling for document processing
+- vLLM-compatible embeddings only
+- Use `--platform linux/amd64` when building containers on Mac for OpenShift
+
+## Markdown documentation format
+- Always use 1. 1. 1. format for numbered lists in markdown
+- Always use sentence case for headings
+- Always include at least one introductory sentence following every new heading
+- Use consistent end punctuation for ordered and bulleted list items.
+- Never use emojis in documentation
+- Always spell out "e.g." as "for example" and "i.e" as "that is"
+- Avoid passive voice
+- Never use "this" on its own in sentence- for example, don't ever say "this is"
+- Never use "there are" or "there is" sentence constructions
+- Avoid future tense
+- Do not use contractions.
+- Do not overuse bulleted lists; if a document is 70%+ bulleted lists, it's too much.
+- Do not use emojis.
+
+## Issue Creation
+
+Write issue titles that are concise and clearly describe the problem or enhancement. For complex topics, the issue body should provide detailed context, including background information, the problem statement, and potential solutions. Use tracking issues to group related sub-tasks. When relevant, consider and mention the impact on or integration with other projects.
+
+## Commit Messages
+
+Write clear and descriptive commit messages using the conventional commit format, such as `kernel: Add find API w/correct hyphen-dash equality, add docs`. The commit body must explain the "why" behind the change, provide necessary context, and link to relevant issues.
+
+The commit should be in the "imperative mood". Use e.g. "Add integration with..." not "Adds integration with...".
+
+Do not include overly verbose implementation details in the commit message if the implementation is relatively obvious; only the highlights or things that a reviewer might find surprising or unusual. In particular do not by default include a generic `Changes` section with a bulleted list by default;
+anyone can look at the code to see the changes (or use an AI to summarize them). Especially do not include a "files changed" section - that's completely
+redundant with information stored by git itself!
