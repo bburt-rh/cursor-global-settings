@@ -1,4 +1,4 @@
-# AI Coding Assistant Configuration
+# AI coding assistant configuration settings
 
 Global rules and preferences for Cursor and Claude Code, optimized for Red Hat enterprise development workflows.
 
